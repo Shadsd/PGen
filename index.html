@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>PassGen — Генератор паролей</title>
+    <!-- Манифест для установки приложения -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Цвет темы для браузера -->
+    <meta name="theme-color" content="#0B1120">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PassGen">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232E5BFF' rx='20'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-weight='bold' font-family='Arial'%3EPG%3C/text%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0B1120 0%, #19213C 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, 'Inter', 'Roboto', sans-serif;
+            padding: 20px;
+        }
+
+        .app-card {
+            max-width: 550px;
+            width: 100%;
+            background: rgba(18, 25, 45, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 56px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4);
+            padding: 32px 24px 42px;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFFFFF, #A9C9FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .install-badge {
+            background: #2E5BFF20;
+            border: 1px solid #2E5BFF60;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            color: #8EBBFF;
+            font-weight: normal;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .sub {
+            text-align: center;
+            color: #8E9BB0;
+            font-weight: 500;
+            margin-bottom: 28px;
+            font-size: 0.85rem;
+        }
+
+        .password-container {
+            background: #0B0F1A;
+            border-radius: 60px;
+            padding: 8px 12px 8px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border: 1px solid #2E3F62;
+            box-shadow: inset 0 1px 3px #00000030;
+        }
+
+        #passwordField {
+            background: transparent;
+            border: none;
+            font-size: 1.3rem;
+            font-family: 'Fira Mono', 'SF Mono', monospace;
+            font-weight: 500;
+            color: #E2F0FF;
+            padding: 14px 0;
+            width: 100%;
+            outline: none;
+            letter-spacing: 1px;
+        }
+
+        .copy-btn {
+            background: #1F2A46;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #BED6FF;
+            font-size: 1.4rem;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.94);
+            background: #2F3E62;
+        }
+
+        .options {
+            margin: 28px 0 24px;
+            background: #0C1222;
+            border-radius: 44px;
+            padding: 20px 18px;
+            border: 1px solid #293559;
+        }
+
+        .slider-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            gap: 8px;
+        }
+
+        .slider-label {
+            color: #C0D0F0;
+            font-weight: 600;
+        }
+
+        #lengthValue {
+            background: #19233F;
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-weight: 700;
+            color: #9BBBFF;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            min-width: 180px;
+            height: 5px;
+            -webkit-appearance: none;
+            background: #2C3B5E;
+            border-radius: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #5D9BFF;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px #5D9BFF;
+        }
+
+        .checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-top: 12px;
+        }
+
+        .checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #CFE2FF;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4F7FFF;
+            cursor: pointer;
+        }
+
+        .generate-btn {
+            background: linear-gradient(95deg, #2E5BFF, #7A4DFF);
+            width: 100%;
+            border: none;
+            padding: 16px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 10px 20px -7px #1E2F60;
+            margin-bottom: 16px;
+        }
+
+        .generate-btn:active {
+            transform: scale(0.97);
+        }
+
+        .toast-message {
+            background: #1B2A44e6;
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            padding: 10px 18px;
+            font-size: 0.8rem;
+            color: #BFFFCF;
+            text-align: center;
+            margin-top: 12px;
+            transition: opacity 0.2s;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 24px;
+            color: #55648B;
+        }
+
+        .install-prompt {
+            background: #10182E;
+            border-radius: 28px;
+            padding: 10px 16px;
+            margin-top: 16px;
+            font-size: 0.7rem;
+            color: #AAB9E6;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .install-btn {
+            background: #2E5BFF;
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 500px) {
+            .app-card {
+                padding: 24px 18px 32px;
+            }
+            #passwordField {
+                font-size: 1rem;
+            }
+            .generate-btn {
+                font-size: 1rem;
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <h1>🔐 PassGen <span class="install-badge">📱 Установи как приложение</span></h1>
+    <div class="sub">⚡ Надёжный генератор паролей</div>
+
+    <div class="password-container">
+        <input type="text" id="passwordField" readonly placeholder="Нажмите «Сгенерировать»" value="SecureP@ss99">
+        <button class="copy-btn" id="copyBtn" aria-label="Копировать">📋</button>
+    </div>
+
+    <div class="options">
+        <div class="slider-group">
+            <span class="slider-label">🔢 Длина пароля</span>
+            <span id="lengthValue">14</span>
+            <input type="range" id="lengthSlider" min="6" max="36" value="14">
+        </div>
+        <div class="checkboxes">
+            <label><input type="checkbox" id="includeUpper" checked> A-Z</label>
+            <label><input type="checkbox" id="includeLower" checked> a-z</label>
+            <label><input type="checkbox" id="includeDigits" checked> 0-9</label>
+            <label><input type="checkbox" id="includeSymbols" checked> !@#$%^&*</label>
+        </div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn">
+        ⚡ СГЕНЕРИРОВАТЬ
+    </button>
+
+    <div id="toastArea" class="toast-message" style="display: none;"></div>
+    
+    <div id="installContainer" class="install-prompt" style="display: none;">
+        <span>📲 Установите PassGen на телефон</span>
+        <button id="installAppBtn" class="install-btn">Установить</button>
+    </div>
+
+    <footer>
+        ✅ Генерация и копирование • Работает офлайн после установки
+    </footer>
+</div>
+
+<script>
+    // Генерация пароля
+    const passwordField = document.getElementById('passwordField');
+    const copyBtn = document.getElementById('copyBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const lengthSlider = document.getElementById('lengthSlider');
+    const lengthValue = document.getElementById('lengthValue');
+    const includeUpper = document.getElementById('includeUpper');
+    const includeLower = document.getElementById('includeLower');
+    const includeDigits = document.getElementById('includeDigits');
+    const includeSymbols = document.getElementById('includeSymbols');
+    const toastArea = document.getElementById('toastArea');
+
+    let toastTimeout = null;
+    function showToast(message, isError = false) {
+        if (!toastArea) return;
+        toastArea.style.display = 'block';
+        toastArea.textContent = message;
+        toastArea.style.color = isError ? '#FFB5A7' : '#BFFFCF';
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toastArea.style.display = 'none';
+        }, 2000);
+    }
+
+    function generatePassword() {
+        const length = parseInt(lengthSlider.value, 10);
+        const upper = includeUpper.checked;
+        const lower = includeLower.checked;
+        const digits = includeDigits.checked;
+        const symbols = includeSymbols.checked;
+
+        if (!upper && !lower && !digits && !symbols) {
+            includeUpper.checked = true;
+            includeLower.checked = true;
+            return generatePassword();
+        }
+
+        let charset = '';
+        if (upper) charset += 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        if (lower) charset += 'abcdefghijkmnopqrstuvwxyz';
+        if (digits) charset += '23456789';
+        if (symbols) charset += '!@#$%^&*()_+';
+
+        if (charset.length === 0) return 'Pass123!';
+
+        let password = '';
+        const randomValues = new Uint32Array(length);
+        crypto.getRandomValues(randomValues);
+        for (let i = 0; i < length; i++) {
+            const randomIndex = randomValues[i] % charset.length;
+            password += charset[randomIndex];
+        }
+        return password;
+    }
+
+    function refreshPassword() {
+        const newPass = generatePassword();
+        passwordField.value = newPass;
+        return newPass;
+    }
+
+    // Копирование с локальным уведомлением (тост)
+    async function copyPassword() {
+        const password = passwordField.value;
+        if (!password || password === '') {
+            showToast('❌ Нет пароля для копирования', true);
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(password);
+            showToast('📋 Пароль скопирован в буфер!');
+            if (navigator.vibrate) navigator.vibrate(50);
+        } catch (err) {
+            passwordField.select();
+            document.execCommand('copy');
+            showToast('📋 Пароль скопирован');
+        }
+    }
+
+    function onGenerate() {
+        const newPass = refreshPassword();
+        showToast('🔐 Новый пароль сгенерирован');
+        if (navigator.vibrate) navigator.vibrate(100);
+    }
+
+    function updateLengthLabel() {
+        lengthValue.innerText = lengthSlider.value;
+    }
+
+    // Инициализация
+    function init() {
+        const initPass = generatePassword();
+        passwordField.value = initPass;
+        updateLengthLabel();
+    }
+
+    generateBtn.addEventListener('click', onGenerate);
+    copyBtn.addEventListener('click', copyPassword);
+    lengthSlider.addEventListener('input', updateLengthLabel);
+
+    init();
+
+    // ----- PWA УСТАНОВКА КАК ПРИЛОЖЕНИЯ -----
+    let deferredPrompt = null;
+    const installContainer = document.getElementById('installContainer');
+    const installBtn = document.getElementById('installAppBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installContainer) installContainer.style.display = 'flex';
+    });
+
+    if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                showToast('Установка уже запущена или не поддерживается', true);
+                return;
+            }
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                showToast('🎉 Приложение устанавливается!');
+                if (installContainer) installContainer.style.display = 'none';
+            } else {
+                showToast('Установка отменена');
+            }
+            deferredPrompt = null;
+        });
+    }
+
+    // Если уже установлено — скрываем кнопку
+    window.addEventListener('appinstalled', () => {
+        if (installContainer) installContainer.style.display = 'none';
+        deferredPrompt = null;
+        showToast('✅ PassGen успешно установлен!');
+    });
+</script>
+
+<!-- Регистрация Service Worker для офлайн-работы и уведомлений -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                console.log('Service Worker зарегистрирован');
+                // Запрашиваем разрешение на уведомления после регистрации (для push)
+                if (Notification.permission === 'default') {
+                    // Не запрашиваем автоматически, только по генерации? Нет, запросим при первом действии.
+                }
+            }).catch(err => console.log('SW ошибка:', err));
+        });
+    }
+
+    // Функция для отправки системного уведомления (работает на телефоне)
+    async function sendSystemNotification(title, body) {
+        // Проверяем поддержку и разрешение
+        if (!('Notification' in window)) {
+            return false;
+        }
+        if (Notification.permission === 'granted') {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                registration.showNotification(title, {
+                    body: body,
+                    icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%232E5BFF" rx="20"/%3E%3Ctext x="50" y="68" font-size="52" text-anchor="middle" fill="white" font-weight="bold"%3EPG%3C/text%3E%3C/svg%3E',
+                    badge: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"%3E%3Cpath d="M12 2C8.13 2 5 5.13 5 9v4c0 .78.16 1.53.46 2.22L4.5 17.5c-.27.67.22 1.36.94 1.36h13.12c.72 0 1.21-.69.94-1.36l-.96-2.28c.3-.69.46-1.44.46-2.22V9c0-3.87-3.13-7-7-7zM9 20h6c0 1.66-1.34 3-3 3s-3-1.34-3-3z"/%3E%3C/svg%3E',
+                    vibrate: [200, 100, 200],
+                    silent: false,
+                    requireInteraction: false
+                });
+                return true;
+            } catch(e) {
+                console.warn('Не удалось отправить уведомление через SW', e);
+                return false;
+            }
+        } else if (Notification.permission === 'default') {
+            // Запрашиваем разрешение
+            const perm = await Notification.requestPermission();
+            if (perm === 'granted') {
+                return sendSystemNotification(title, body);
+            }
+        }
+        return false;
+    }
+
+    // Переопределяем оригинальные тосты, чтобы добавить реальные уведомления на телефон
+    // Сохраняем оригинальную showToast
+    const originalShowToast = showToast;
+    window.showToast = function(msg, isError) {
+        originalShowToast(msg, isError);
+    };
+
+    // Модифицируем onGenerate и copyPassword, чтобы слать push-уведомления
+    const originalGenerate = onGenerate;
+    const originalCopy = copyPassword;
+
+    window.onGenerate = async function() {
+        const newPass = refreshPassword();
+        originalShowToast('🔐 Новый пароль сгенерирован');
+        if (navigator.vibrate) navigator.vibrate(100);
+        // Отправляем системное уведомление на телефон
+        await sendSystemNotification('PassGen', '✅ Пароль успешно сгенерирован');
+    };
+
+    window.copyPassword = async function() {
+        const password = passwordField.value;
+        if (!password) {
+            originalShowToast('❌ Нет пароля', true);
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(password);
+            originalShowToast('📋 Пароль скопирован');
+            if (navigator.vibrate) navigator.vibrate(50);
+            await sendSystemNotification('PassGen', '📋 Пароль скопирован в буфер обмена');
+        } catch(err) {
+            passwordField.select();
+            document.execCommand('copy');
+            originalShowToast('📋 Пароль скопирован');
+            await sendSystemNotification('PassGen', '📋 Пароль скопирован');
+        }
+    };
+
+    // Заменяем обработчики
+    generateBtn.onclick = window.onGenerate;
+    copyBtn.onclick = window.copyPassword;
+
+    // Автоматически запросим разрешение на уведомления при первом клике на любую кнопку
+    async function requestNotifPermissionOnFirstAction() {
+        if (Notification.permission === 'default') {
+            const result = await Notification.requestPermission();
+            if (result === 'granted') {
+                originalShowToast('🔔 Уведомления разрешены!');
+            }
+        }
+    }
+
+    const originalGenHandler = generateBtn.onclick;
+    const originalCopyHandler = copyBtn.onclick;
+
+    generateBtn.onclick = async (e) => {
+        await requestNotifPermissionOnFirstAction();
+        if (window.onGenerate) await window.onGenerate();
+    };
+    copyBtn.onclick = async (e) => {
+        await requestNotifPermissionOnFirstAction();
+        if (window.copyPassword) await window.copyPassword();
+    };
+</script>
+
+<!-- Создаём sw.js динамически через Blob, чтобы сайт работал из одного HTML -->
+<script>
+    (function createServiceWorker() {
+        const swCode = `const CACHE_NAME = 'passgen-v2';
+const urlsToCache = [
+  './',
+  './index.html'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.map(key => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      })
+    ))
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({type: 'window', includeUncontrolled: true})
+      .then(clientList => {
+        if (clientList.length > 0) {
+          return clientList[0].focus();
+        }
+        return clients.openWindow('/');
+      })
+  );
+});`;
+
+        const blob = new Blob([swCode], {type: 'application/javascript'});
+        const swUrl = URL.createObjectURL(blob);
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(swUrl).then(reg => {
+                console.log('SW зарегистрирован через blob');
+                // После регистрации обновляем URL, чтобы сохранить работоспособность
+                setTimeout(() => {
+                    if (reg.active) {
+                        // OK
+                    }
+                }, 100);
+            }).catch(e => console.log('SW регистрация не удалась:', e));
+        }
+    })();
+</script>
+
+<!-- Манифест создаём динамически -->
+<script>
+    (function createManifest() {
+        const manifestObj = {
+            name: "PassGen — Генератор паролей",
+            short_name: "PassGen",
+            description: "Надёжный генератор паролей с уведомлениями",
+            start_url: ".",
+            display: "standalone",
+            theme_color: "#0B1120",
+            background_color: "#0B1120",
+            orientation: "portrait",
+            icons: [
+                {
+                    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232E5BFF' rx='20'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-weight='bold' font-family='Arial'%3EPG%3C/text%3E%3C/svg%3E",
+                    sizes: "any",
+                    type: "image/svg+xml",
+                    purpose: "any maskable"
+                },
+                {
+                    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232E5BFF' rx='20'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-weight='bold'%3EPG%3C/text%3E%3C/svg%3E",
+                    sizes: "512x512",
+                    type: "image/svg+xml"
+                }
+            ]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const link = document.querySelector('link[rel="manifest"]');
+        if (link) {
+            link.href = manifestURL;
+        } else {
+            const newLink = document.createElement('link');
+            newLink.rel = 'manifest';
+            newLink.href = manifestURL;
+            document.head.appendChild(newLink);
+        }
+    })();
+</script>
+
+</body>
+</html>
