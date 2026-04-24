@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>SecurePass — Генератор паролей с уведомлениями</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0B1120 0%, #19213C 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, 'Inter', 'Roboto', sans-serif;
+            padding: 20px;
+        }
+
+        /* Карточка приложения */
+        .app-card {
+            max-width: 550px;
+            width: 100%;
+            background: rgba(18, 25, 45, 0.75);
+            backdrop-filter: blur(10px);
+            border-radius: 56px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            padding: 32px 24px 42px;
+            transition: all 0.2s ease;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFFFFF, #A9C9FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+        }
+
+        .sub {
+            text-align: center;
+            color: #8E9BB0;
+            font-weight: 500;
+            margin-bottom: 28px;
+            font-size: 0.9rem;
+            border-bottom: 1px dashed #2E3A5A;
+            display: inline-block;
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 6px;
+        }
+
+        /* Поле пароля */
+        .password-container {
+            background: #0B0F1A;
+            border-radius: 60px;
+            padding: 8px 12px 8px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border: 1px solid #2E3F62;
+            transition: all 0.2s;
+            box-shadow: inset 0 1px 3px #00000030, 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .password-container:focus-within {
+            border-color: #5D9BFF;
+            box-shadow: 0 0 0 3px rgba(93, 155, 255, 0.3), inset 0 1px 2px #000;
+        }
+
+        #passwordField {
+            background: transparent;
+            border: none;
+            font-size: 1.4rem;
+            font-family: 'Fira Mono', 'SF Mono', monospace;
+            font-weight: 500;
+            color: #E2F0FF;
+            padding: 14px 0;
+            width: 100%;
+            outline: none;
+            letter-spacing: 1px;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: #1F2A46;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #BED6FF;
+            font-size: 1.5rem;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.94);
+            background: #2F3E62;
+        }
+
+        /* Панель настроек */
+        .options {
+            margin: 28px 0 24px;
+            background: #0C1222;
+            border-radius: 44px;
+            padding: 20px 18px;
+            border: 1px solid #293559;
+        }
+
+        .slider-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            gap: 8px;
+        }
+
+        .slider-label {
+            color: #C0D0F0;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        #lengthValue {
+            background: #19233F;
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-weight: 700;
+            color: #9BBBFF;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            min-width: 180px;
+            height: 5px;
+            -webkit-appearance: none;
+            background: #2C3B5E;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        input[type="range"]:focus {
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #5D9BFF;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px #5D9BFF;
+            border: none;
+        }
+
+        .checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 12px;
+        }
+
+        .checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #CFE2FF;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #4F7FFF;
+            cursor: pointer;
+        }
+
+        /* Кнопка генерации */
+        .generate-btn {
+            background: linear-gradient(95deg, #2E5BFF, #7A4DFF);
+            width: 100%;
+            border: none;
+            padding: 16px;
+            border-radius: 60px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 10px 20px -7px #1E2F60;
+            margin-bottom: 20px;
+        }
+
+        .generate-btn:active {
+            transform: scale(0.97);
+            background: linear-gradient(95deg, #1F4ADB, #5F36E0);
+        }
+
+        /* Индикатор уведомлений */
+        .toast-message {
+            background: #1B2A44e6;
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            color: #BFFFCF;
+            text-align: center;
+            font-weight: 500;
+            margin-top: 16px;
+            transition: opacity 0.2s;
+            border-left: 4px solid #5DFFA0;
+        }
+
+        .permission-info {
+            background: #10182E;
+            border-radius: 28px;
+            padding: 12px 18px;
+            margin-top: 16px;
+            font-size: 0.75rem;
+            color: #AAB9E6;
+            text-align: center;
+        }
+
+        .perm-button {
+            background: #2A3D75;
+            border: none;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-weight: bold;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 28px;
+            color: #55648B;
+        }
+
+        @media (max-width: 500px) {
+            .app-card {
+                padding: 24px 18px 32px;
+            }
+            #passwordField {
+                font-size: 1.1rem;
+            }
+            .generate-btn {
+                font-size: 1.1rem;
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <h1>🔐 PassCraft</h1>
+    <div style="text-align: center;"><span class="sub">⚡ генератор с уведомлениями</span></div>
+
+    <!-- Поле пароля -->
+    <div class="password-container">
+        <input type="text" id="passwordField" readonly placeholder="Нажмите «Сгенерировать»" value="P@ssw0rd!23">
+        <button class="copy-btn" id="copyBtn" aria-label="Копировать пароль">📋</button>
+    </div>
+
+    <!-- Настройки -->
+    <div class="options">
+        <div class="slider-group">
+            <span class="slider-label">🔢 Длина пароля</span>
+            <span id="lengthValue">14</span>
+            <input type="range" id="lengthSlider" min="6" max="36" value="14">
+        </div>
+        <div class="checkboxes">
+            <label><input type="checkbox" id="includeUpper" checked> A-Z (верхний)</label>
+            <label><input type="checkbox" id="includeLower" checked> a-z (нижний)</label>
+            <label><input type="checkbox" id="includeDigits" checked> 0-9</label>
+            <label><input type="checkbox" id="includeSymbols" checked> !@#$%^&*()_+</label>
+        </div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn">
+        ⚡ СГЕНЕРИРОВАТЬ ПАРОЛЬ
+    </button>
+
+    <!-- Область для отображения статуса уведомлений -->
+    <div id="notificationStatus" class="toast-message" style="display: none;"></div>
+    <div id="permRequestArea" class="permission-info">
+        🔔 Для уведомлений на телефон разрешите показ уведомлений.
+        <button id="requestPermBtn" class="perm-button">🎯 Разрешить</button>
+    </div>
+    <footer>
+        ✅ Генерация → уведомление «Пароль сгенерирован»<br>
+        ✨ Копирование → уведомление «Пароль скопирован»
+    </footer>
+</div>
+
+<script>
+    (function() {
+        // DOM элементы
+        const passwordField = document.getElementById('passwordField');
+        const copyBtn = document.getElementById('copyBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const lengthSlider = document.getElementById('lengthSlider');
+        const lengthValue = document.getElementById('lengthValue');
+        const includeUpper = document.getElementById('includeUpper');
+        const includeLower = document.getElementById('includeLower');
+        const includeDigits = document.getElementById('includeDigits');
+        const includeSymbols = document.getElementById('includeSymbols');
+        const notificationStatusDiv = document.getElementById('notificationStatus');
+        const permRequestArea = document.getElementById('permRequestArea');
+        const requestPermBtn = document.getElementById('requestPermBtn');
+
+        // Переменная состояния разрешения на уведомления
+        let notificationsGranted = false;
+
+        // --- ФУНКЦИЯ ГЕНЕРАЦИИ ПАРОЛЯ ---
+        function generatePassword() {
+            const length = parseInt(lengthSlider.value, 10);
+            const upper = includeUpper.checked;
+            const lower = includeLower.checked;
+            const digits = includeDigits.checked;
+            const symbols = includeSymbols.checked;
+
+            // Проверяем, что выбран хотя бы один набор символов
+            if (!upper && !lower && !digits && !symbols) {
+                // Если ничего не выбрано - включаем по умолчанию буквы и цифры, чтобы не сломать
+                includeUpper.checked = true;
+                includeLower.checked = true;
+                return generatePassword(); // рекурсивно перегенерируем с корректными настройками
+            }
+
+            let charset = '';
+            if (upper) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (lower) charset += 'abcdefghijklmnopqrstuvwxyz';
+            if (digits) charset += '0123456789';
+            if (symbols) charset += '!@#$%^&*()_+~`{}[]:;<>,.?/|';
+
+            if (charset.length === 0) return 'Error';
+
+            let password = '';
+            const randomValues = new Uint32Array(length);
+            crypto.getRandomValues(randomValues);
+            for (let i = 0; i < length; i++) {
+                const randomIndex = randomValues[i] % charset.length;
+                password += charset[randomIndex];
+            }
+            return password;
+        }
+
+        // Обновить пароль в поле и вернуть строку
+        function refreshAndGetPassword() {
+            const newPass = generatePassword();
+            passwordField.value = newPass;
+            return newPass;
+        }
+
+        // --- СИСТЕМА УВЕДОМЛЕНИЙ (Работает и на телефоне, и на ПК) ---
+        // Функция показа уведомления с заголовком и телом
+        function sendNotification(title, body, justLog = false) {
+            if (!('Notification' in window)) {
+                console.warn('Браузер не поддерживает уведомления');
+                showInlineToast(`⚠️ Уведомления не поддерживаются, но действие выполнено: ${body}`, 2500);
+                return false;
+            }
+
+            if (notificationsGranted && Notification.permission === 'granted') {
+                // Пытаемся отправить уведомление с вибрацией (легкая вибрация на телефоне если доступна)
+                try {
+                    const notif = new Notification(title, {
+                        body: body,
+                        icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234F7FFF"%3E%3Cpath d="M12 2C8.13 2 5 5.13 5 9v4c0 .78.16 1.53.46 2.22L4.5 17.5c-.27.67.22 1.36.94 1.36h13.12c.72 0 1.21-.69.94-1.36l-.96-2.28c.3-.69.46-1.44.46-2.22V9c0-3.87-3.13-7-7-7zM9 20h6c0 1.66-1.34 3-3 3s-3-1.34-3-3z"/%3E%3C/svg%3E',
+                        silent: false,   // звук может быть системным
+                        vibrate: [200, 100, 200] // вибрация на телефонах (поддержка Android/Chrome)
+                    });
+                    notif.onclick = function() {
+                        window.focus();
+                        notif.close();
+                    };
+                    setTimeout(() => notif.close(), 5000);
+                    showInlineToast(`🔔 ${title}: ${body}`, 1800);
+                    return true;
+                } catch(e) {
+                    console.error("Ошибка уведомления", e);
+                    showInlineToast(`✅ ${body} (уведомление не доставлено)`, 2000);
+                }
+            } else if (Notification.permission === 'default') {
+                // разрешение еще не запрошено, показываем подсказку, но не спамим
+                showInlineToast(`⚠️ Для уведомлений нажмите «Разрешить». Действие: ${body}`, 2500);
+                return false;
+            } else if (Notification.permission === 'denied') {
+                showInlineToast(`🔕 Уведомления запрещены. ${body}`, 2000);
+                return false;
+            }
+            return false;
+        }
+
+        // небольшое всплывающее сообщение в интерфейсе (дубль уведомления)
+        let toastTimeout = null;
+        function showInlineToast(message, duration = 2000) {
+            if (!notificationStatusDiv) return;
+            notificationStatusDiv.style.display = 'block';
+            notificationStatusDiv.textContent = message;
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                if (notificationStatusDiv) notificationStatusDiv.style.display = 'none';
+            }, duration);
+        }
+
+        // Запросить разрешение на уведомления с обработкой результата (для мобильных)
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                showInlineToast('Ваш браузер не поддерживает уведомления', 3000);
+                return false;
+            }
+            if (Notification.permission === 'granted') {
+                notificationsGranted = true;
+                updatePermUI();
+                showInlineToast('✅ Уведомления уже разрешены!', 1500);
+                return true;
+            }
+            if (Notification.permission === 'denied') {
+                showInlineToast('❌ Уведомления заблокированы. Измените настройки браузера', 3000);
+                return false;
+            }
+            // Запрашиваем разрешение
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    notificationsGranted = true;
+                    updatePermUI();
+                    // Пробное уведомление для подтверждения работы
+                    new Notification('🔔 Уведомления активированы', {
+                        body: 'Теперь при генерации и копировании пароля будут приходить push-уведомления на телефон!',
+                        icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2344DD77"%3E%3Cpath d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15h-2v-2h2v2zm0-4h-2V7h2v6z"/%3E%3C/svg%3E'
+                    });
+                    showInlineToast('🎉 Уведомления разрешены! Теперь всё работает', 2500);
+                    return true;
+                } else {
+                    notificationsGranted = false;
+                    updatePermUI();
+                    showInlineToast('Уведомления не разрешены. Вы не будете получать оповещения', 2500);
+                    return false;
+                }
+            } catch (err) {
+                console.warn(err);
+                return false;
+            }
+        }
+
+        function updatePermUI() {
+            if (notificationsGranted || (Notification.permission === 'granted')) {
+                notificationsGranted = true;
+                if (permRequestArea) {
+                    permRequestArea.style.opacity = '0.6';
+                    permRequestArea.innerHTML = '🔔 ✅ Уведомления активны! Оповещения будут приходить на телефон/устройство.';
+                    const oldBtn = permRequestArea.querySelector('#requestPermBtn');
+                    if (oldBtn) oldBtn.remove();
+                }
+            } else {
+                if (permRequestArea && !permRequestArea.querySelector('#requestPermBtn')) {
+                    permRequestArea.innerHTML = '🔔 Для уведомлений на телефон разрешите показ уведомлений. <button id="requestPermBtn" class="perm-button">🎯 Разрешить</button>';
+                    document.getElementById('requestPermBtn')?.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        requestNotificationPermission();
+                    });
+                }
+            }
+        }
+
+        // проверим статус при загрузке
+        function checkInitialPerm() {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                notificationsGranted = true;
+                updatePermUI();
+            } else {
+                notificationsGranted = false;
+                updatePermUI();
+            }
+        }
+
+        // --- ГЛАВНЫЙ МЕТОД ГЕНЕРАЦИИ С УВЕДОМЛЕНИЕМ ---
+        function onGenerate() {
+            // Генерируем новый пароль
+            const newPassword = refreshAndGetPassword();
+            // Отправляем уведомление "Пароль сгенерирован"
+            sendNotification('🔐 PassCraft', '✅ Новый пароль успешно сгенерирован!');
+            // Дополнительно покажем всплывашку в интерфейсе
+            showInlineToast('✨ Пароль обновлён! Теперь можно скопировать.', 1500);
+        }
+
+        // --- МЕТОД КОПИРОВАНИЯ С УВЕДОМЛЕНИЕМ "ПАРОЛЬ СКОПИРОВАН" ---
+        async function copyPasswordToClipboard() {
+            const password = passwordField.value;
+            if (!password || password === 'Нажмите «Сгенерировать»') {
+                showInlineToast('❌ Нечего копировать: сначала сгенерируйте пароль', 2000);
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(password);
+                // Отправляем уведомление, что пароль скопирован
+                sendNotification('🔐 PassCraft', '📋 Пароль скопирован в буфер обмена!');
+                showInlineToast('📋 Пароль скопирован! Уведомление отправлено.', 1600);
+                // Дополнительно короткая вибрация при копировании на телефоне (если поддерживается)
+                if (navigator.vibrate) navigator.vibrate(50);
+            } catch (err) {
+                console.error('Ошибка копирования:', err);
+                showInlineToast('⚠️ Не удалось скопировать пароль вручную разрешите доступ', 2000);
+                // fallback для старых браузеров
+                passwordField.select();
+                document.execCommand('copy');
+                sendNotification('🔐 PassCraft', '📋 Пароль скопирован (старый метод)');
+                showInlineToast('📋 Пароль скопирован!', 1500);
+            }
+        }
+
+        // Добавляем вибрацию при генерации (для тактильного отклика)
+        function vibrateLight() {
+            if (navigator.vibrate) navigator.vibrate(100);
+        }
+
+        // Обновление цифры длины
+        function updateLengthLabel() {
+            lengthValue.innerText = lengthSlider.value;
+        }
+
+        // Обработчики событий
+        generateBtn.addEventListener('click', () => {
+            vibrateLight();
+            onGenerate();
+        });
+
+        copyBtn.addEventListener('click', () => {
+            vibrateLight();
+            copyPasswordToClipboard();
+        });
+
+        lengthSlider.addEventListener('input', () => {
+            updateLengthLabel();
+            // по желанию можно автоматически обновить пароль при изменении длины? лучше подождать генерацию
+        });
+
+        // При изменении чекбоксов или слайдера не обновляем пароль автоматически — только по кнопке,
+        // но чтобы показать пример, можно при первом запуске выдать хороший пароль
+        function initializeFirstPassword() {
+            const initPass = generatePassword();
+            passwordField.value = initPass;
+            updateLengthLabel();
+        }
+
+        // Дополнительно: если пользователь вручную меняет галочки/слайдер, можно не трогать пароль,
+        // но для удобства по желанию. Мы оставляем ручную генерацию.
+
+        // До кучи: обработать энтер на кнопке генерации
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Enter' && document.activeElement !== copyBtn && document.activeElement !== lengthSlider) {
+                e.preventDefault();
+                generateBtn.click();
+            }
+        });
+
+        // Инициализация уведомлений и интерфейса
+        checkInitialPerm();
+        initializeFirstPassword();
+
+        // если пользователь повторно нажмет на кнопку запроса (после обновления)
+        if (requestPermBtn) {
+            requestPermBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                requestNotificationPermission();
+            });
+        }
+
+        // Также позаботимся, чтобы при загрузке страницы, если уведомления еще не запрошены, не мучать,
+        // но разрешение запросим по клику на кнопку.
+        // Для дополнительного удобства, если пользователь кликнул в любую область сгенерировать и еще не дал прав,
+        // мы напомним через всплывашку (это уже в sendNotification отработает)
+
+        // Защита от двойного объявления событий на динамическую кнопку
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'requestPermBtn') {
+                requestNotificationPermission();
+            }
+        });
+    })();
+</script>
+</body>
+</html>
